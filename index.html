@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
 </head>
+
 <body>
     <div class="background">
         <div class="orb orb-1"></div>
@@ -18,7 +20,7 @@
         <header class="header">
             <div class="logo">
                 <i data-feather="link-2"></i>
-                <h1>Synapsis</h1>
+                <h1>Linker</h1>
             </div>
             <div class="header-actions">
                 <button id="exportBtn" class="secondary-btn" title="Export to JSON">
@@ -54,27 +56,28 @@
             </div>
             <form id="linkForm" class="form">
                 <input type="hidden" id="linkId">
-                
+
                 <div class="form-group">
                     <label for="linkName">Name</label>
                     <input type="text" id="linkName" required placeholder="e.g., GitHub" autocomplete="off">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="linkUrl">URL</label>
                     <input type="url" id="linkUrl" required placeholder="https://github.com" autocomplete="off">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="linkDesc">Description</label>
                     <textarea id="linkDesc" rows="3" placeholder="A short description of this resource..."></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="linkCategory">Category</label>
-                    <input type="text" id="linkCategory" required placeholder="e.g., Development, Design" autocomplete="off">
+                    <input type="text" id="linkCategory" required placeholder="e.g., Development, Design"
+                        autocomplete="off">
                 </div>
-                
+
                 <div class="form-group">
                     <label>Icon</label>
                     <div class="icon-selector" id="iconSelector">
@@ -82,7 +85,7 @@
                     </div>
                     <input type="hidden" id="linkIcon" required>
                 </div>
-                
+
                 <div class="form-actions">
                     <button type="button" class="secondary-btn" id="cancelBtn">Cancel</button>
                     <button type="submit" class="primary-btn submit-btn">Save Entry</button>
@@ -93,4 +96,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
