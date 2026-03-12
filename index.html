@@ -20,9 +20,18 @@
                 <i data-feather="link-2"></i>
                 <h1>Synapsis</h1>
             </div>
-            <button id="addBtn" class="primary-btn">
-                <i data-feather="plus"></i> <span>Add URL</span>
-            </button>
+            <div class="header-actions">
+                <button id="exportBtn" class="secondary-btn" title="Export to JSON">
+                    <i data-feather="download"></i>
+                </button>
+                <button id="importBtn" class="secondary-btn" title="Import from JSON">
+                    <i data-feather="upload"></i>
+                </button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+                <button id="addBtn" class="primary-btn">
+                    <i data-feather="plus"></i> <span>Add URL</span>
+                </button>
+            </div>
         </header>
 
         <section class="filters-container">
