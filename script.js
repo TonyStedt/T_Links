@@ -1,5 +1,5 @@
 // State
-let links = JSON.parse(localStorage.getItem('linker_links')) || [];
+let links = [];
 let currentFilter = 'All';
 let editingId = null;
 
@@ -35,9 +35,26 @@ const linkCategoryInput = document.getElementById('linkCategory');
 const linkIconInput = document.getElementById('linkIcon');
 
 // Initialize App
-function init() {
+async function init() {
     renderIconSelector();
+    await fetchLinks();
     updateView();
+}
+
+async function fetchLinks() {
+    try {
+        const response = await fetch('/api/links');
+        if (response.ok) {
+            links = await response.json();
+            saveData(); // Save backup
+        } else {
+            console.error('API Error, falling back to local storage.');
+            links = JSON.parse(localStorage.getItem('linker_links')) || [];
+        }
+    } catch (e) {
+        console.error('Fetch error, falling back to local storage.', e);
+        links = JSON.parse(localStorage.getItem('linker_links')) || [];
+    }
 }
 
 // Render Icon Selector in Modal
@@ -146,7 +163,7 @@ function renderLinks() {
     `).join('');
 }
 
-// Save to LocalStorage
+// Save backup to LocalStorage
 function saveData() {
     localStorage.setItem('linker_links', JSON.stringify(links));
 }
@@ -172,7 +189,7 @@ function closeModal() {
 }
 
 // Form Submission (Add / Edit)
-linkForm.addEventListener('submit', (e) => {
+linkForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const newLink = {
@@ -190,15 +207,29 @@ linkForm.addEventListener('submit', (e) => {
     }
 
     if (editingId) {
-        // Update
-        const index = links.findIndex(l => l.id === editingId);
-        if (index !== -1) {
-            links[index] = newLink;
-        }
+        // Update API
+        try {
+            await fetch(`/api/links/${editingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newLink)
+            });
+            const index = links.findIndex(l => l.id === editingId);
+            if (index !== -1) {
+                links[index] = newLink;
+            }
+        } catch (err) { console.error('Error updating link', err); }
     } else {
-        // Add
-        links.push(newLink);
-        currentFilter = 'All'; // Reset filter when adding new item
+        // Add API
+        try {
+            await fetch('/api/links', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newLink)
+            });
+            links.push(newLink);
+            currentFilter = 'All'; // Reset filter when adding new item
+        } catch (err) { console.error('Error adding link', err); }
     }
 
     closeModal();
@@ -222,10 +253,13 @@ window.editLink = (id) => {
 };
 
 // Delete Link
-window.deleteLink = (id) => {
+window.deleteLink = async (id) => {
     if (confirm('Are you sure you want to delete this link?')) {
-        links = links.filter(l => l.id !== id);
-        updateView();
+        try {
+            await fetch(`/api/links/${id}`, { method: 'DELETE' });
+            links = links.filter(l => l.id !== id);
+            updateView();
+        } catch (err) { console.error('Error deleting link', err); }
     }
 };
 
@@ -256,21 +290,22 @@ importFile.addEventListener('change', (e) => {
     if (!file) return;
     
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
         try {
             const parsedData = JSON.parse(event.target.result);
             if (Array.isArray(parsedData)) {
-                if (confirm('Do you want to replace existing links with the imported data? Click OK to replace, or Cancel to merge them.')) {
-                    links = parsedData;
-                } else {
-                    const existingIds = new Set(links.map(l => l.id));
-                    parsedData.forEach(link => {
-                        if (!existingIds.has(link.id)) {
-                            links.push(link);
-                        }
+                const replace = confirm('Do you want to replace existing links with the imported data? Click OK to replace, or Cancel to merge them.');
+                try {
+                    await fetch('/api/links/bulk', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ replace: replace, links: parsedData })
                     });
+                    await fetchLinks(); // Reload from database
+                    updateView();
+                } catch(err) {
+                    console.error('API Error during bulk import', err);
                 }
-                updateView();
             } else {
                 alert('Invalid file format. Please upload a valid JSON file containing an array of links.');
             }
